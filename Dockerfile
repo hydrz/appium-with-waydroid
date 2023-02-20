@@ -53,7 +53,15 @@ RUN mkdir -p /usr/share/waydroid-extra/images/ && \
     rm vendor.zip && \
     rm system.zip
 
-RUN apt install -y dkms
+# install binderfs
+RUN apt install -y dkms git && \
+    git clone https://github.com/anbox/anbox-modules.git && \
+    cd anbox-modules && \
+    cp anbox.conf /etc/modules-load.d/  && \
+    cp 99-anbox.rules /lib/udev/rules.d/  && \
+    cp -rT binder /usr/src/anbox-binder-1  && \
+    dkms install anbox-binder/1 && \
+    modprobe binder_linux
 
 RUN waydroid init
 
