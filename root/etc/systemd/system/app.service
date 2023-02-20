@@ -1,0 +1,16 @@
+[Unit]
+Description=App
+After=waydroid-container.service
+
+[Service]
+Type=simple
+Environment="XDG_RUNTIME_DIR=/run/user/0"
+Environment=JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+Environment=ANDROID_HOME=/opt/android-sdk
+Environment=PATH=/opt/android-sdk/cmdline-tools/latest/bin:/opt/android-sdk/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/usr/bin/app.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
