@@ -53,28 +53,22 @@ RUN mkdir -p /usr/share/waydroid-extra/images/ && \
     rm vendor.zip && \
     rm system.zip
 
-#  Get Waydroid to work through a VM
-RUN \
-    waydroid init 
+RUN apt install -y dkms
+
+RUN waydroid init
 
 # Add root files
 COPY root/ /
-
-# enable systemd
-RUN \
-    systemctl enable app && \
-    systemctl start app
 
 # Expose ports
 EXPOSE 4723
 
 ######### End Customizations ###########
 
-RUN (useradd -M -u 1001 -g 1000 nan \
-    && usermod -a -G kasm-user nan) ; exit 0
+RUN chown 1000:0 $HOME
 
-ENV HOME /home/nan
+ENV HOME /home/kasm-user
 WORKDIR $HOME
-RUN mkdir -p $HOME && chown -R 1001:0 $HOME
+RUN mkdir -p $HOME && chown -R 1000:0 $HOME
 
-USER 1001
+USER 1000
