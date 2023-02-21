@@ -1,46 +1,19 @@
-FROM kasmweb/core-ubuntu-focal:1.12.0
+FROM ubuntu:20.04
 
-USER root
-
-ENV HOME /home/kasm-default-profile
-ENV STARTUPDIR /dockerstartup
-ENV INST_SCRIPTS $STARTUPDIR/install
-WORKDIR $HOME
-
-######### Customize Container Here ###########
+# Set environment variables
+ENV ANDROID_HOME=/opt/android-sdk
+ENV PATH=$PATH:$ANDROID_HOME/platform-tools
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     curl \
     ca-certificates \
     unzip \
-    openjdk-11-jdk-headless
-
-# Install Android SDK
-RUN mkdir -p /opt/android-sdk && \
-    curl -L https://oos-cn.ctyunapi.cn/nan-files/commandlinetools-linux-9477386_latest.zip -o /opt/android-sdk/cmdline-tools.zip && \
-    unzip /opt/android-sdk/cmdline-tools.zip -d /opt/android-sdk && \
-    rm /opt/android-sdk/cmdline-tools.zip
-
-# Install Android SDK components
-RUN yes | /opt/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/opt/android-sdk --licenses && \
-    /opt/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/opt/android-sdk "platform-tools" "platforms;android-30"
-
-# Set environment variables
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-ENV ANDROID_HOME=/opt/android-sdk
-ENV PATH=$PATH:$ANDROID_HOME/platform-tools
-
-# Install Node.js
-RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs
+    weston
 
 # Install waydroid
 RUN curl https://repo.waydro.id | bash && \
     apt-get install -y waydroid
-
-# Install appium
-RUN npm install -g appium
 
 # download waydroid android image
 RUN mkdir -p /usr/share/waydroid-extra/images/ && \
@@ -53,25 +26,17 @@ RUN mkdir -p /usr/share/waydroid-extra/images/ && \
     rm vendor.zip && \
     rm system.zip
 
-## install required kernel modules
-RUN apt install linux-modules-extra-`uname -r` && \
-    modprobe binder_linux devices="binder,hwbinder,vndbinder"  && \
-    modprobe ashmem_linux
-
-RUN waydroid init
+# Install Android SDK
+RUN mkdir -p ${ANDROID_HOME} && \
+    curl -L https://oos-cn.ctyunapi.cn/nan-files/commandlinetools-linux-9477386_latest.zip -o ${ANDROID_HOME}/cmdline-tools.zip && \
+    unzip ${ANDROID_HOME}/cmdline-tools.zip -d ${ANDROID_HOME} && \
+    rm ${ANDROID_HOME}/cmdline-tools.zip
 
 # Add root files
 COPY root/ /
 
 # Expose ports
-EXPOSE 4723
+EXPOSE 5555
 
-######### End Customizations ###########
-
-RUN chown 1000:0 $HOME
-
-ENV HOME /home/kasm-user
-WORKDIR $HOME
-RUN mkdir -p $HOME && chown -R 1000:0 $HOME
-
-USER 1000
+# Set the default command
+CMD ["/entrypoint.sh"]
